@@ -1,26 +1,30 @@
 import { useEffect, useState } from "react";
-import StopWatch from "./components/StopWatch";
 import ControlButtons from "./components/ControlButtons";
+import StopWatch from "./components/StopWatch";
 
 function App() {
-  const [start, setStart] = useState(false);
+  const [isRunning, setIsRunning] = useState(false);
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
   const [seconds, setSeconds] = useState(0);
-  const [stopwatch, setStopwatch] = useState(null);
+  const [intervalId, setIntervalId] = useState(null);
 
   const handleStart = () => {
-    setStart(true);
-    const interval = setInterval(() => {
-      setSeconds((prevSeconds) => prevSeconds + 1);
-    }, 1000);
-    setStopwatch(interval);
+    if (!isRunning) {
+      setIsRunning(true);
+      const id = setInterval(() => {
+        setSeconds(prevSeconds => prevSeconds + 1);
+      }, 1000);
+      setIntervalId(id);
+    }
   };
 
   const handleStop = () => {
-    setStart(false);
-    clearInterval(stopwatch);
-    setStopwatch(null);
+    if (intervalId) {
+      clearInterval(intervalId);
+      setIntervalId(null);
+      setIsRunning(false);
+    }
   };
 
   const handleReset = () => {
@@ -39,11 +43,15 @@ function App() {
     }
   }, [seconds, minutes]);
 
+  useEffect(() => {
+    handleStart();
+  }, []);
+
   return (
     <div className="flex justify-center h-screen w-full flex-col">
       <StopWatch hours={hours} minutes={minutes} seconds={seconds} />
       <ControlButtons
-        start={start}
+        isRunning={isRunning}
         handleStart={handleStart}
         handleStop={handleStop}
         handleReset={handleReset}
